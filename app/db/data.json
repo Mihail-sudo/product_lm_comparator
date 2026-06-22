@@ -1,0 +1,744 @@
+{
+  "categories": [
+    {
+      "name": "Сырье",
+      "parent_id": null,
+      "description": "Базовые ингредиенты для производства продуктов питания"
+    },
+    {
+      "name": "Мука",
+      "parent_id": 1,
+      "description": "Пшеничная, ржаная, цельнозерновая мука"
+    },
+    {
+      "name": "Сахар",
+      "parent_id": 1,
+      "description": "Сахар-песок, сахарная пудра, тростниковый сахар"
+    },
+    {
+      "name": "Масло",
+      "parent_id": 1,
+      "description": "Растительное, сливочное, специальные жиры"
+    },
+    {
+      "name": "Молочные продукты",
+      "parent_id": 1,
+      "description": "Молоко, сливки, масло, сыры"
+    },
+    {
+      "name": "Упаковка",
+      "parent_id": null,
+      "description": "Все виды упаковочных материалов"
+    },
+    {
+      "name": "Пластиковая упаковка",
+      "parent_id": 6,
+      "description": "ПЭТ, полиэтилен, полипропилен"
+    },
+    {
+      "name": "Стеклянная упаковка",
+      "parent_id": 6,
+      "description": "Стеклянные банки, бутылки"
+    },
+    {
+      "name": "Картонная упаковка",
+      "parent_id": 6,
+      "description": "Гофрокартон, коробки, лотки"
+    },
+    {
+      "name": "Готовая продукция",
+      "parent_id": null,
+      "description": "Готовые продукты питания"
+    },
+    {
+      "name": "Хлебобулочные изделия",
+      "parent_id": 10,
+      "description": "Хлеб, булочки, батоны"
+    },
+    {
+      "name": "Кондитерские изделия",
+      "parent_id": 10,
+      "description": "Печенье, пряники, конфеты"
+    }
+  ],
+  "suppliers": [
+    {
+      "name": "Хлебопродукт-М",
+      "description": "Крупнейший производитель муки высшего сорта. Современное оборудование от Bühler. Собственная лаборатория контроля качества.",
+      "city": "Москва",
+      "region": "Центральный",
+      "address": "г. Москва, ул. Производственная, 15",
+      "website": "https://hleboprodukt.ru",
+      "foundation_year": 1998,
+      "rating": 4.8,
+      "rating_count": 342,
+      "is_verified": true,
+      "status": "active",
+      "categories": [
+        {"name": "Мука", "is_main": true}
+      ],
+      "contacts": [
+        {"type": "phone", "value": "+7 (495) 123-45-67", "contact_person": "Иванов Иван", "is_primary": true},
+        {"type": "email", "value": "info@hleboprodukt.ru", "contact_person": null, "is_primary": false},
+        {"type": "telegram", "value": "@hleboprodukt", "contact_person": null, "is_primary": false}
+      ],
+      "order_conditions": [
+        {
+          "category_name": "Мука",
+          "min_order_quantity": 1000,
+          "min_order_unit": "kg",
+          "price_per_unit": 45.50,
+          "price_currency": "RUB",
+          "price_negotiable": true,
+          "delivery_terms": "Бесплатная доставка от 5 тонн",
+          "delivery_region": "Москва и Московская область",
+          "delivery_cost": 3000.00,
+          "payment_terms": "Предоплата 50%, постоплата 50%",
+          "lead_time_days": 3
+        }
+      ],
+      "certificates": [
+        {
+          "certificate_name": "ГОСТ Р ИСО 9001-2015",
+          "certificate_type": "quality",
+          "issuing_authority": "Росстандарт",
+          "issued_date": "2023-01-15",
+          "expiry_date": "2026-01-14",
+          "file_url": null,
+          "is_valid": true
+        },
+        {
+          "certificate_name": "ХАССП",
+          "certificate_type": "safety",
+          "issuing_authority": "Роспотребнадзор",
+          "issued_date": "2022-06-01",
+          "expiry_date": "2025-05-31",
+          "file_url": null,
+          "is_valid": true
+        }
+      ],
+      "notes": [
+        {
+          "note_text": "Отличная мука, стабильное качество. Работаем уже 2 года, ни разу не подвели.",
+          "note_type": "quality",
+          "rating_impact": 1
+        },
+        {
+          "note_text": "Цены немного выше среднего, но качество того стоит.",
+          "note_type": "price",
+          "rating_impact": 0
+        }
+      ]
+    },
+    {
+      "name": "Агро-Юг",
+      "description": "Южный производитель сахара и муки. Собственные поля в Краснодарском крае. Вертикально интегрированное производство.",
+      "city": "Краснодар",
+      "region": "Южный",
+      "address": "г. Краснодар, ул. Полевая, 8",
+      "website": "https://agro-yug.ru",
+      "foundation_year": 2005,
+      "rating": 4.5,
+      "rating_count": 215,
+      "is_verified": true,
+      "status": "active",
+      "categories": [
+        {"name": "Мука", "is_main": false},
+        {"name": "Сахар", "is_main": true}
+      ],
+      "contacts": [
+        {"type": "phone", "value": "+7 (861) 234-56-78", "contact_person": "Петров Петр", "is_primary": true},
+        {"type": "email", "value": "sales@agro-yug.ru", "contact_person": null, "is_primary": false}
+      ],
+      "order_conditions": [
+        {
+          "category_name": "Сахар",
+          "min_order_quantity": 500,
+          "min_order_unit": "kg",
+          "price_per_unit": 52.00,
+          "price_currency": "RUB",
+          "price_negotiable": true,
+          "delivery_terms": "Самовывоз или доставка по южному региону",
+          "delivery_region": "Южный ФО",
+          "delivery_cost": 2500.00,
+          "payment_terms": "100% предоплата",
+          "lead_time_days": 5
+        },
+        {
+          "category_name": "Мука",
+          "min_order_quantity": 2000,
+          "min_order_unit": "kg",
+          "price_per_unit": 42.00,
+          "price_currency": "RUB",
+          "price_negotiable": true,
+          "delivery_terms": "Доставка по всей России",
+          "delivery_region": "Россия",
+          "delivery_cost": 5000.00,
+          "payment_terms": "Предоплата 50%",
+          "lead_time_days": 7
+        }
+      ],
+      "certificates": [
+        {
+          "certificate_name": "Органик сертификат",
+          "certificate_type": "organic",
+          "issuing_authority": "ЕвроЛист",
+          "issued_date": "2022-10-10",
+          "expiry_date": "2024-10-09",
+          "file_url": null,
+          "is_valid": true
+        }
+      ],
+      "notes": [
+        {
+          "note_text": "Хорошее соотношение цена-качество. Очень отзывчивый менеджер.",
+          "note_type": "general",
+          "rating_impact": 1
+        }
+      ]
+    },
+    {
+      "name": "Молпром-СПб",
+      "description": "Поставщик молочных продуктов высшего качества. Производство под Санкт-Петербургом. Собственное стадо 500 голов.",
+      "city": "Санкт-Петербург",
+      "region": "Северо-Западный",
+      "address": "г. Санкт-Петербург, пр. Обуховской Обороны, 120",
+      "website": "https://molprom-spb.ru",
+      "foundation_year": 2010,
+      "rating": 4.9,
+      "rating_count": 420,
+      "is_verified": true,
+      "status": "active",
+      "categories": [
+        {"name": "Молочные продукты", "is_main": true}
+      ],
+      "contacts": [
+        {"type": "phone", "value": "+7 (812) 345-67-89", "contact_person": "Сидорова Мария", "is_primary": true},
+        {"type": "email", "value": "order@molprom-spb.ru", "contact_person": null, "is_primary": false},
+        {"type": "whatsapp", "value": "+7 (812) 345-67-89", "contact_person": null, "is_primary": false}
+      ],
+      "order_conditions": [
+        {
+          "category_name": "Молочные продукты",
+          "min_order_quantity": 100,
+          "min_order_unit": "liter",
+          "price_per_unit": 85.00,
+          "price_currency": "RUB",
+          "price_negotiable": false,
+          "delivery_terms": "Доставка в день заказа",
+          "delivery_region": "СПб и ЛО",
+          "delivery_cost": 1000.00,
+          "payment_terms": "Отсрочка 14 дней",
+          "lead_time_days": 1
+        }
+      ],
+      "certificates": [
+        {
+          "certificate_name": "ISO 22000",
+          "certificate_type": "iso",
+          "issuing_authority": "TÜV Nord",
+          "issued_date": "2023-03-20",
+          "expiry_date": "2026-03-19",
+          "file_url": null,
+          "is_valid": true
+        },
+        {
+          "certificate_name": "Халал",
+          "certificate_type": "halal",
+          "issuing_authority": "Совет муфтиев России",
+          "issued_date": "2022-12-01",
+          "expiry_date": "2024-11-30",
+          "file_url": null,
+          "is_valid": true
+        }
+      ],
+      "notes": [
+        {
+          "note_text": "Лучший поставщик молока в регионе. Свежие продукты, всегда вовремя.",
+          "note_type": "quality",
+          "rating_impact": 2
+        },
+        {
+          "note_text": "Минимальный заказ высоковат для маленьких пекарен.",
+          "note_type": "delivery",
+          "rating_impact": -1
+        }
+      ]
+    },
+    {
+      "name": "Упак-Сервис",
+      "description": "Производитель и поставщик упаковки для пищевой промышленности. Полный цикл производства. Печать на упаковке.",
+      "city": "Нижний Новгород",
+      "region": "Приволжский",
+      "address": "г. Нижний Новгород, ул. Заводская, 45",
+      "website": "https://upak-servis.ru",
+      "foundation_year": 2008,
+      "rating": 4.3,
+      "rating_count": 178,
+      "is_verified": false,
+      "status": "active",
+      "categories": [
+        {"name": "Пластиковая упаковка", "is_main": true},
+        {"name": "Картонная упаковка", "is_main": false}
+      ],
+      "contacts": [
+        {"type": "phone", "value": "+7 (831) 456-78-90", "contact_person": "Николаев Николай", "is_primary": true},
+        {"type": "email", "value": "info@upak-servis.ru", "contact_person": null, "is_primary": false}
+      ],
+      "order_conditions": [
+        {
+          "category_name": "Пластиковая упаковка",
+          "min_order_quantity": 1000,
+          "min_order_unit": "piece",
+          "price_per_unit": 15.00,
+          "price_currency": "RUB",
+          "price_negotiable": true,
+          "delivery_terms": "Доставка по России",
+          "delivery_region": "Россия",
+          "delivery_cost": 4500.00,
+          "payment_terms": "Предоплата 70%",
+          "lead_time_days": 14
+        }
+      ],
+      "certificates": [],
+      "notes": [
+        {
+          "note_text": "Качественная упаковка, но бывают задержки с доставкой.",
+          "note_type": "delivery",
+          "rating_impact": -1
+        },
+        {
+          "note_text": "Хорошо печатают на пакетах, делают дизайн.",
+          "note_type": "general",
+          "rating_impact": 0
+        }
+      ]
+    },
+    {
+      "name": "Золотой Колос",
+      "description": "Крупный агрохолдинг. Выращивание и переработка зерна. Производство муки и круп.",
+      "city": "Воронеж",
+      "region": "Центральный",
+      "address": "г. Воронеж, ул. Агрономическая, 7",
+      "website": "https://zolotoy-kolos.ru",
+      "foundation_year": 1995,
+      "rating": 4.6,
+      "rating_count": 280,
+      "is_verified": true,
+      "status": "active",
+      "categories": [
+        {"name": "Мука", "is_main": true}
+      ],
+      "contacts": [
+        {"type": "phone", "value": "+7 (473) 567-89-01", "contact_person": "Александрова Анна", "is_primary": true},
+        {"type": "email", "value": "sales@zolotoy-kolos.ru", "contact_person": null, "is_primary": false},
+        {"type": "telegram", "value": "@zolotoy_kolos", "contact_person": null, "is_primary": false}
+      ],
+      "order_conditions": [
+        {
+          "category_name": "Мука",
+          "min_order_quantity": 3000,
+          "min_order_unit": "kg",
+          "price_per_unit": 38.00,
+          "price_currency": "RUB",
+          "price_negotiable": true,
+          "delivery_terms": "Бесплатная доставка от 10 тонн",
+          "delivery_region": "Центральный регион",
+          "delivery_cost": 6000.00,
+          "payment_terms": "Постоплата",
+          "lead_time_days": 4
+        }
+      ],
+      "certificates": [
+        {
+          "certificate_name": "ГОСТ Р ИСО 9001-2015",
+          "certificate_type": "quality",
+          "issuing_authority": "Росстандарт",
+          "issued_date": "2021-08-15",
+          "expiry_date": "2024-08-14",
+          "file_url": null,
+          "is_valid": true
+        }
+      ],
+      "notes": []
+    },
+    {
+      "name": "Сластена-Кондитер",
+      "description": "Производитель кондитерских изделий. Печенье, пряники, конфеты оптом. Собственные рецептуры.",
+      "city": "Казань",
+      "region": "Приволжский",
+      "address": "г. Казань, ул. Сладкая, 3",
+      "website": "https://slastena-konditer.ru",
+      "foundation_year": 2015,
+      "rating": 4.2,
+      "rating_count": 156,
+      "is_verified": false,
+      "status": "active",
+      "categories": [
+        {"name": "Кондитерские изделия", "is_main": true}
+      ],
+      "contacts": [
+        {"type": "phone", "value": "+7 (843) 678-90-12", "contact_person": "Смирнов Сергей", "is_primary": true},
+        {"type": "email", "value": "info@slastena.ru", "contact_person": null, "is_primary": false}
+      ],
+      "order_conditions": [
+        {
+          "category_name": "Кондитерские изделия",
+          "min_order_quantity": 50,
+          "min_order_unit": "kg",
+          "price_per_unit": 250.00,
+          "price_currency": "RUB",
+          "price_negotiable": true,
+          "delivery_terms": "Доставка по Татарстану",
+          "delivery_region": "Республика Татарстан",
+          "delivery_cost": 1500.00,
+          "payment_terms": "Предоплата 50%",
+          "lead_time_days": 3
+        }
+      ],
+      "certificates": [],
+      "notes": [
+        {
+          "note_text": "Вкусные пряники, хорошая цена. Но нет сертификатов, что смущает.",
+          "note_type": "quality",
+          "rating_impact": 0
+        }
+      ]
+    },
+    {
+      "name": "Стеклотара-Про",
+      "description": "Производство стеклянной упаковки для пищевых продуктов. Банки, бутылки. Собственное стекольное производство.",
+      "city": "Гусь-Хрустальный",
+      "region": "Центральный",
+      "address": "г. Гусь-Хрустальный, ул. Стеклянная, 1",
+      "website": "https://steklotara-pro.ru",
+      "foundation_year": 2000,
+      "rating": 4.4,
+      "rating_count": 203,
+      "is_verified": true,
+      "status": "active",
+      "categories": [
+        {"name": "Стеклянная упаковка", "is_main": true}
+      ],
+      "contacts": [
+        {"type": "phone", "value": "+7 (492) 789-01-23", "contact_person": "Кузнецова Елена", "is_primary": true},
+        {"type": "email", "value": "order@steklotara-pro.ru", "contact_person": null, "is_primary": false}
+      ],
+      "order_conditions": [
+        {
+          "category_name": "Стеклянная упаковка",
+          "min_order_quantity": 1000,
+          "min_order_unit": "piece",
+          "price_per_unit": 35.00,
+          "price_currency": "RUB",
+          "price_negotiable": true,
+          "delivery_terms": "Самовывоз или доставка",
+          "delivery_region": "Центральная Россия",
+          "delivery_cost": 8000.00,
+          "payment_terms": "Предоплата 100%",
+          "lead_time_days": 10
+        }
+      ],
+      "certificates": [
+        {
+          "certificate_name": "ISO 9001",
+          "certificate_type": "iso",
+          "issuing_authority": "SGS",
+          "issued_date": "2022-05-20",
+          "expiry_date": "2025-05-19",
+          "file_url": null,
+          "is_valid": true
+        }
+      ],
+      "notes": []
+    },
+    {
+      "name": "Маслозавод Екатеринбургский",
+      "description": "Производство растительных масел. Подсолнечное, оливковое, специальные смеси.",
+      "city": "Екатеринбург",
+      "region": "Уральский",
+      "address": "г. Екатеринбург, ул. Маслозаводская, 12",
+      "website": "https://maslo-ekb.ru",
+      "foundation_year": 2012,
+      "rating": 4.1,
+      "rating_count": 134,
+      "is_verified": false,
+      "status": "active",
+      "categories": [
+        {"name": "Масло", "is_main": true}
+      ],
+      "contacts": [
+        {"type": "phone", "value": "+7 (343) 890-12-34", "contact_person": "Медведев Дмитрий", "is_primary": true},
+        {"type": "email", "value": "sales@maslo-ekb.ru", "contact_person": null, "is_primary": false},
+        {"type": "whatsapp", "value": "+7 (343) 890-12-34", "contact_person": null, "is_primary": false}
+      ],
+      "order_conditions": [
+        {
+          "category_name": "Масло",
+          "min_order_quantity": 200,
+          "min_order_unit": "liter",
+          "price_per_unit": 120.00,
+          "price_currency": "RUB",
+          "price_negotiable": true,
+          "delivery_terms": "Доставка по УрФО",
+          "delivery_region": "Уральский ФО",
+          "delivery_cost": 2000.00,
+          "payment_terms": "Отсрочка 7 дней",
+          "lead_time_days": 2
+        }
+      ],
+      "certificates": [
+        {
+          "certificate_name": "ХАССП",
+          "certificate_type": "safety",
+          "issuing_authority": "Роспотребнадзор",
+          "issued_date": "2021-11-01",
+          "expiry_date": "2023-10-31",
+          "file_url": null,
+          "is_valid": false
+        }
+      ],
+      "notes": [
+        {
+          "note_text": "Хорошее масло, но просроченный сертификат ХАССП — насторожило.",
+          "note_type": "quality",
+          "rating_impact": -1
+        },
+        {
+          "note_text": "Цены выше средних по региону.",
+          "note_type": "price",
+          "rating_impact": -1
+        }
+      ]
+    },
+    {
+      "name": "Тара-Пак",
+      "description": "Производство картонной упаковки и гофротары. Собственная линия по переработке макулатуры.",
+      "city": "Ростов-на-Дону",
+      "region": "Южный",
+      "address": "г. Ростов-на-Дону, ул. Тарная, 5",
+      "website": "https://tara-pak.ru",
+      "foundation_year": 2003,
+      "rating": 4.0,
+      "rating_count": 98,
+      "is_verified": false,
+      "status": "active",
+      "categories": [
+        {"name": "Картонная упаковка", "is_main": true}
+      ],
+      "contacts": [
+        {"type": "phone", "value": "+7 (863) 901-23-45", "contact_person": "Федоров Федор", "is_primary": true},
+        {"type": "email", "value": "info@tara-pak.ru", "contact_person": null, "is_primary": false}
+      ],
+      "order_conditions": [
+        {
+          "category_name": "Картонная упаковка",
+          "min_order_quantity": 500,
+          "min_order_unit": "piece",
+          "price_per_unit": 25.00,
+          "price_currency": "RUB",
+          "price_negotiable": false,
+          "delivery_terms": "Самовывоз",
+          "delivery_region": "Ростовская область",
+          "delivery_cost": null,
+          "payment_terms": "100% предоплата",
+          "lead_time_days": 5
+        }
+      ],
+      "certificates": [],
+      "notes": []
+    },
+    {
+      "name": "Хлебный Дом",
+      "description": "Сеть мини-пекарен. Хлеб, булочки, батоны. Ищет новых поставщиков муки и упаковки.",
+      "city": "Москва",
+      "region": "Центральный",
+      "address": "г. Москва, ул. Пекарская, 20",
+      "website": "https://hlebny-dom.ru",
+      "foundation_year": 2018,
+      "rating": 4.7,
+      "rating_count": 320,
+      "is_verified": false,
+      "status": "active",
+      "categories": [
+        {"name": "Хлебобулочные изделия", "is_main": true}
+      ],
+      "contacts": [
+        {"type": "phone", "value": "+7 (495) 012-34-56", "contact_person": "Соколова Ольга", "is_primary": true},
+        {"type": "email", "value": "zakaz@hlebny-dom.ru", "contact_person": null, "is_primary": false}
+      ],
+      "order_conditions": [
+        {
+          "category_name": "Хлебобулочные изделия",
+          "min_order_quantity": 30,
+          "min_order_unit": "kg",
+          "price_per_unit": 180.00,
+          "price_currency": "RUB",
+          "price_negotiable": true,
+          "delivery_terms": "Доставка по Москве",
+          "delivery_region": "Москва",
+          "delivery_cost": 500.00,
+          "payment_terms": "Постоплата 30 дней",
+          "lead_time_days": 1
+        }
+      ],
+      "certificates": [
+        {
+          "certificate_name": "ХАССП",
+          "certificate_type": "safety",
+          "issuing_authority": "Роспотребнадзор",
+          "issued_date": "2023-02-01",
+          "expiry_date": "2024-01-31",
+          "file_url": null,
+          "is_valid": true
+        }
+      ],
+      "notes": [
+        {
+          "note_text": "Отличная пекарня, выпечка всегда свежая. Можно рекомендовать как надежного клиента.",
+          "note_type": "general",
+          "rating_impact": 1
+        }
+      ]
+    },
+    {
+      "name": "Сахарный Мир",
+      "description": "Крупный трейдер сахара. Работает с производителями из Бразилии, Индии, Кубы. Оптовые поставки.",
+      "city": "Санкт-Петербург",
+      "region": "Северо-Западный",
+      "address": "г. Санкт-Петербург, ул. Торговая, 50",
+      "website": "https://saharny-mir.ru",
+      "foundation_year": 2010,
+      "rating": 3.9,
+      "rating_count": 87,
+      "is_verified": false,
+      "status": "active",
+      "categories": [
+        {"name": "Сахар", "is_main": true}
+      ],
+      "contacts": [
+        {"type": "phone", "value": "+7 (812) 456-78-90", "contact_person": "Козлов Александр", "is_primary": true},
+        {"type": "email", "value": "info@saharny-mir.ru", "contact_person": null, "is_primary": false},
+        {"type": "telegram", "value": "@saharny_mir", "contact_person": null, "is_primary": false}
+      ],
+      "order_conditions": [
+        {
+          "category_name": "Сахар",
+          "min_order_quantity": 10000,
+          "min_order_unit": "kg",
+          "price_per_unit": 48.00,
+          "price_currency": "RUB",
+          "price_negotiable": true,
+          "delivery_terms": "Доставка по всей России",
+          "delivery_region": "Россия",
+          "delivery_cost": 10000.00,
+          "payment_terms": "Банковская гарантия",
+          "lead_time_days": 30
+        }
+      ],
+      "certificates": [
+        {
+          "certificate_name": "ISO 22000",
+          "certificate_type": "iso",
+          "issuing_authority": "TÜV Nord",
+          "issued_date": "2021-09-01",
+          "expiry_date": "2023-08-31",
+          "file_url": null,
+          "is_valid": false
+        },
+        {
+          "certificate_name": "Organic",
+          "certificate_type": "organic",
+          "issuing_authority": "CertEurope",
+          "issued_date": "2022-06-15",
+          "expiry_date": "2023-06-14",
+          "file_url": null,
+          "is_valid": false
+        }
+      ],
+      "notes": [
+        {
+          "note_text": "Неплохие цены, но только крупным оптом. И все сертификаты просрочены.",
+          "note_type": "general",
+          "rating_impact": -1
+        }
+      ]
+    },
+    {
+      "name": "Молочный Рай",
+      "description": "Производитель сыров и сливочного масла. Только натуральные продукты. Собственная ферма в Подмосковье.",
+      "city": "Москва",
+      "region": "Центральный",
+      "address": "г. Москва, ул. Сырная, 8",
+      "website": "https://molochny-ray.ru",
+      "foundation_year": 2008,
+      "rating": 4.8,
+      "rating_count": 510,
+      "is_verified": true,
+      "status": "active",
+      "categories": [
+        {"name": "Молочные продукты", "is_main": true}
+      ],
+      "contacts": [
+        {"type": "phone", "value": "+7 (495) 345-67-89", "contact_person": "Волкова Ирина", "is_primary": true},
+        {"type": "email", "value": "sale@molochny-ray.ru", "contact_person": null, "is_primary": false}
+      ],
+      "order_conditions": [
+        {
+          "category_name": "Молочные продукты",
+          "min_order_quantity": 50,
+          "min_order_unit": "kg",
+          "price_per_unit": 350.00,
+          "price_currency": "RUB",
+          "price_negotiable": true,
+          "delivery_terms": "Бесплатная доставка от 100 кг",
+          "delivery_region": "Москва и МО",
+          "delivery_cost": 800.00,
+          "payment_terms": "Отсрочка 14 дней",
+          "lead_time_days": 2
+        }
+      ],
+      "certificates": [
+        {
+          "certificate_name": "ГОСТ Р ИСО 9001-2015",
+          "certificate_type": "quality",
+          "issuing_authority": "Росстандарт",
+          "issued_date": "2023-04-01",
+          "expiry_date": "2026-03-31",
+          "file_url": null,
+          "is_valid": true
+        },
+        {
+          "certificate_name": "ХАССП",
+          "certificate_type": "safety",
+          "issuing_authority": "Роспотребнадзор",
+          "issued_date": "2022-10-01",
+          "expiry_date": "2025-09-30",
+          "file_url": null,
+          "is_valid": true
+        },
+        {
+          "certificate_name": "Organic",
+          "certificate_type": "organic",
+          "issuing_authority": "ЕвроЛист",
+          "issued_date": "2023-01-15",
+          "expiry_date": "2024-01-14",
+          "file_url": null,
+          "is_valid": true
+        }
+      ],
+      "notes": [
+        {
+          "note_text": "Сыр высшего качества, просто вкусный! Рекомендую всем производителям пиццы.",
+          "note_type": "quality",
+          "rating_impact": 2
+        },
+        {
+          "note_text": "Работать приятно, всегда на связи, быстро реагируют.",
+          "note_type": "communication",
+          "rating_impact": 1
+        }
+      ]
+    }
+  ]
+}
