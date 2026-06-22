@@ -64,3 +64,5 @@ coverage.xml
 *.njsproj
 *.sln
 *.swp
+
+.DS_Store
