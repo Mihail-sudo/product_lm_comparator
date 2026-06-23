@@ -2,9 +2,9 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from db.crud import user_notes as crud
-from schemas.user_note import UserNoteResponse, UserNoteCreate
-from db.db_config import get_db
+from app.db.crud import user_notes as crud
+from app.schemas.user_note import UserNoteResponse, UserNoteCreate
+from app.db.db_config import get_db
 
 router = APIRouter(prefix="/suppliers/{supplier_id}/notes", tags=["notes"])
 

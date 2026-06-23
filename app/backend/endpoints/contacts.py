@@ -2,9 +2,9 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from db.crud import contacts as crud
-from schemas.contact import ContactResponse, ContactCreate
-from db.db_config import get_db
+from app.db.crud import contacts as crud
+from app.schemas.contact import ContactResponse, ContactCreate
+from app.db.db_config import get_db
 
 router = APIRouter(prefix="/suppliers/{supplier_id}/contacts", tags=["contacts"])
 

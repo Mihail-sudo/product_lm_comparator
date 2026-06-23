@@ -2,10 +2,10 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
-from db.crud import suppliers as crud
-from schemas.supplier import SupplierResponse, SupplierCreate, SupplierUpdate, SupplierListResponse
+from app.db.crud import suppliers as crud
+from app.schemas.supplier import SupplierResponse, SupplierCreate, SupplierUpdate, SupplierListResponse
 
-from db.db_config import get_db
+from app.db.db_config import get_db
 
 router = APIRouter(prefix="/suppliers", tags=["suppliers"])
 

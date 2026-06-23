@@ -35,6 +35,7 @@ def get_category_with_supplier_count(db: Session) -> List[Dict[str, Any]]:
     results = db.query(
         Category.id,
         Category.name,
+        Category.created_at,
         func.count(SupplierCategory.supplier_id).label('supplier_count')
     ).outerjoin(
         SupplierCategory
@@ -45,7 +46,7 @@ def get_category_with_supplier_count(db: Session) -> List[Dict[str, Any]]:
     ).all()
     
     return [
-        {"id": r.id, "name": r.name, "supplier_count": r.supplier_count}
+        {"id": r.id, "name": r.name, "supplier_count": r.supplier_count, "created_at": r.created_at}
         for r in results
     ]
 

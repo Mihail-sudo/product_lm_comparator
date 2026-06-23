@@ -2,9 +2,9 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from db.crud import certificates as crud
-from schemas.certificate import CertificateResponse, CertificateCreate
-from db.db_config import get_db
+from app.db.crud import certificates as crud
+from app.schemas.certificate import CertificateResponse, CertificateCreate
+from app.db.db_config import get_db
 
 router = APIRouter(prefix="/suppliers/{supplier_id}/certificates", tags=["certificates"])
 
