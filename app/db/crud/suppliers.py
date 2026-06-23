@@ -6,7 +6,7 @@ from ..models import (
     Supplier, SupplierCategory,
     OrderCondition, Certificate,
 )
-# ==================== SUPPLIERS ====================
+
 
 def get_supplier(db: Session, supplier_id: int) -> Optional[Supplier]:
     """Получить поставщика по ID со всеми связями."""

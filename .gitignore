@@ -65,4 +65,4 @@ coverage.xml
 *.sln
 *.swp
 
-.DS_Store
+*DS_Store

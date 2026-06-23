@@ -4,10 +4,7 @@ from typing import List
 from ..models import Supplier, SupplierCategory
 
 
-def get_suppliers_for_comparison(
-    db: Session, 
-    supplier_ids: List[int]
-) -> List[Supplier]:
+def get_suppliers_for_comparison(db: Session, supplier_ids: List[int]) -> List[Supplier]:
     """
     Получить нескольких поставщиков для сравнения со всеми данными.
     """
