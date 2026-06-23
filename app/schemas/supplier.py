@@ -30,7 +30,7 @@ class SupplierBase(BaseModel):
 
 
 class SupplierCreate(SupplierBase):
-    pass
+    category_ids: Optional[List[int]] = None  # Список ID категорий
 
 
 class SupplierUpdate(BaseModel):

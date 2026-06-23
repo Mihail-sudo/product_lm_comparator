@@ -7,6 +7,8 @@ from app.schemas.supplier import SupplierResponse, SupplierCreate, SupplierUpdat
 
 from app.db.db_config import get_db
 
+from .serializer import serialize_supplier
+
 router = APIRouter(prefix="/suppliers", tags=["suppliers"])
 
 
@@ -20,7 +22,18 @@ def get_suppliers(
     """Получить список всех поставщиков с пагинацией."""
     total = crud.get_suppliers_count(db, only_active=only_active)
     items = crud.get_all_suppliers(db, skip=skip, limit=limit, only_active=only_active)
-    return SupplierListResponse(total=total, items=items, skip=skip, limit=limit)
+
+    response_items = []
+    for supplier in items:
+        # Создаем словарь с данными поставщика
+        response_items.append(serialize_supplier(supplier))
+    
+    return SupplierListResponse(
+        total=total, 
+        items=response_items, 
+        skip=skip, 
+        limit=limit
+    )
 
 
 @router.get("/search", response_model=SupplierListResponse)
@@ -49,64 +62,34 @@ def search_suppliers(
         skip=skip,
         limit=limit
     )
-    # TODO: Добавить подсчет общего количества для поиска
-    return SupplierListResponse(total=len(items), items=items, skip=skip, limit=limit)
+
+    response_items = []
+    for supplier in items:
+        response_items.append(serialize_supplier(supplier))
+
+    return SupplierListResponse(total=len(items), items=response_items, skip=skip, limit=limit)
 
 
 @router.get("/{supplier_id}", response_model=SupplierResponse)
-def get_supplier(
-    supplier_id: int,
-    with_details: bool = Query(False),
-    db: Session = Depends(get_db)
-):
+def get_supplier(supplier_id: int, db: Session = Depends(get_db)):
     """Получить поставщика по ID."""
-    if with_details:
-        supplier = crud.get_supplier_with_details(db, supplier_id)
-    else:
-        supplier = crud.get_supplier(db, supplier_id)
-    
+    supplier = crud.get_supplier(db, supplier_id)
+    supplier = serialize_supplier(supplier)
     if not supplier:
         raise HTTPException(status_code=404, detail="Supplier not found")
     return supplier
 
 
-@router.get("/category/{category_id}", response_model=List[SupplierResponse])
-def get_suppliers_by_category(
-    category_id: int,
-    skip: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=100),
-    db: Session = Depends(get_db)
-):
-    """Получить всех поставщиков в определенной категории."""
-    return crud.get_suppliers_by_category(db, category_id, skip=skip, limit=limit)
-
-
-@router.get("/city/{city}", response_model=List[SupplierResponse])
-def get_suppliers_by_city(
-    city: str,
-    skip: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=100),
-    db: Session = Depends(get_db)
-):
-    """Получить всех поставщиков в определенном городе."""
-    return crud.get_suppliers_by_city(db, city, skip=skip, limit=limit)
-
-
 @router.post("/", response_model=SupplierResponse, status_code=201)
-def create_supplier(
-    supplier_data: SupplierCreate,
-    db: Session = Depends(get_db)
-):
+def create_supplier(supplier_data: SupplierCreate, db: Session = Depends(get_db)):
     """Создать нового поставщика."""
-    return crud.create_supplier(db, supplier_data.model_dump())
+    new_supplier = crud.create_supplier(db, supplier_data.model_dump())
+    new_supplier = serialize_supplier(new_supplier)
+    return new_supplier
 
 
 @router.put("/{supplier_id}", response_model=SupplierResponse)
-def update_supplier(
-    supplier_id: int,
-    supplier_data: SupplierUpdate,
-    db: Session = Depends(get_db)
-):
+def update_supplier(supplier_id: int, supplier_data: SupplierUpdate, db: Session = Depends(get_db)):
     """Обновить данные поставщика."""
     supplier = crud.update_supplier(db, supplier_id, supplier_data.model_dump(exclude_unset=True))
     if not supplier:
@@ -115,10 +98,7 @@ def update_supplier(
 
 
 @router.delete("/{supplier_id}", status_code=204)
-def delete_supplier(
-    supplier_id: int,
-    db: Session = Depends(get_db)
-):
+def delete_supplier(supplier_id: int, db: Session = Depends(get_db)):
     """Удалить поставщика."""
     deleted = crud.delete_supplier(db, supplier_id)
     if not deleted:
@@ -127,10 +107,7 @@ def delete_supplier(
 
 
 @router.post("/{supplier_id}/rating/update", response_model=SupplierResponse)
-def update_rating(
-    supplier_id: int,
-    db: Session = Depends(get_db)
-):
+def update_rating(supplier_id: int, db: Session = Depends(get_db)):
     """Пересчитать рейтинг поставщика на основе заметок."""
     supplier = crud.get_supplier(db, supplier_id)
     if not supplier:

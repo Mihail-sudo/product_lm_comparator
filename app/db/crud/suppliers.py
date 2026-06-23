@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import or_, desc, func
 from typing import List, Optional, Dict, Any
 
@@ -13,25 +13,11 @@ def get_supplier(db: Session, supplier_id: int) -> Optional[Supplier]:
     return db.query(Supplier).filter(Supplier.id == supplier_id).first()
 
 
-def get_supplier_with_details(db: Session, supplier_id: int) -> Optional[Supplier]:
-    """Получить поставщика со всеми связанными данными."""
-    return db.query(Supplier).options(
-        joinedload(Supplier.categories).joinedload(SupplierCategory.category),
-        joinedload(Supplier.contacts),
-        joinedload(Supplier.order_conditions),
-        joinedload(Supplier.certificates),
-        joinedload(Supplier.notes)
-    ).filter(Supplier.id == supplier_id).first()
-
-
-def get_all_suppliers(
-    db: Session, 
-    skip: int = 0, 
-    limit: int = 100,
-    only_active: bool = True
-) -> List[Supplier]:
+def get_all_suppliers(db: Session, skip: int = 0, limit: int = 100, only_active: bool = True) -> List[Supplier]:
     """Получить список всех поставщиков с пагинацией."""
-    query = db.query(Supplier)
+    query = db.query(Supplier).options(
+        selectinload(Supplier.categories).selectinload(SupplierCategory.category)
+    )
     if only_active:
         query = query.filter(Supplier.status == 'active')
     return query.offset(skip).limit(limit).all()
@@ -47,8 +33,21 @@ def get_suppliers_count(db: Session, only_active: bool = True) -> int:
 
 def create_supplier(db: Session, supplier_data: Dict[str, Any]) -> Supplier:
     """Создать нового поставщика."""
+    category_ids = supplier_data.pop('category_ids', None)
+
     supplier = Supplier(**supplier_data)
     db.add(supplier)
+    db.flush()
+
+    if category_ids:
+        for category_id in category_ids:
+            supplier_category = SupplierCategory(
+                supplier_id=supplier.id,
+                category_id=category_id,
+                is_main=False
+            )
+            db.add(supplier_category)
+
     db.commit()
     db.refresh(supplier)
     return supplier
@@ -147,29 +146,3 @@ def search_suppliers(
     query = query.order_by(desc(Supplier.rating))
     
     return query.offset(skip).limit(limit).all()
-
-
-def get_suppliers_by_category(
-    db: Session,
-    category_id: int,
-    skip: int = 0,
-    limit: int = 50
-) -> List[Supplier]:
-    """Получить всех поставщиков в определенной категории."""
-    return db.query(Supplier).join(Supplier.categories).filter(
-        SupplierCategory.category_id == category_id,
-        Supplier.status == 'active'
-    ).order_by(desc(Supplier.rating)).offset(skip).limit(limit).all()
-
-
-def get_suppliers_by_city(
-    db: Session,
-    city: str,
-    skip: int = 0,
-    limit: int = 50
-) -> List[Supplier]:
-    """Получить всех поставщиков в определенном городе."""
-    return db.query(Supplier).filter(
-        Supplier.city.ilike(f"%{city}%"),
-        Supplier.status == 'active'
-    ).order_by(desc(Supplier.rating)).offset(skip).limit(limit).all()

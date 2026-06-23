@@ -1,14 +1,11 @@
 from .suppliers import (
     get_supplier,
-    get_supplier_with_details,
     get_all_suppliers,
     get_suppliers_count,
     create_supplier,
     update_supplier,
     delete_supplier,
-    search_suppliers,
-    get_suppliers_by_category,
-    get_suppliers_by_city,
+    search_suppliers
 )
 
 from .categories import (
