@@ -1,9 +1,103 @@
 import streamlit as st
 import api_requests
 import asyncio
-import pprint
+# import pprint
 
 
+def show_comparison(suppliers):
+    """Отображение сравнения поставщиков в табличном виде"""
+    
+    st.markdown("## 📊 Сравнение поставщиков")
+    
+    # Получаем имена поставщиков для заголовков
+    supplier_names = [s['name'] for s in suppliers]
+    
+    # Создаем таблицу сравнения в виде списка словарей
+    comparison_data = []
+    
+    # Город
+    row = {"Критерий": "🏙️ Город"}
+    for supplier in suppliers:
+        row[supplier['name']] = supplier.get('city', 'Н/Д')
+    comparison_data.append(row)
+    
+    # Адрес
+    row = {"Критерий": "📍 Адрес"}
+    for supplier in suppliers:
+        row[supplier['name']] = supplier.get('address', 'Н/Д')
+    comparison_data.append(row)
+    
+    # Сертификаты
+    row = {"Критерий": "📜 Сертификаты"}
+    for supplier in suppliers:
+        if supplier.get('certificates'):
+            certs = ", ".join([c['certificate_name'] for c in supplier['certificates']])
+            row[supplier['name']] = certs
+        else:
+            row[supplier['name']] = "Нет"
+    comparison_data.append(row)
+    
+    # Контакты
+    row = {"Критерий": "📞 Контакты"}
+    for supplier in suppliers:
+        if supplier.get('contact'):
+            contacts = ", ".join([f"{c['contact_person']} ({c['contact_value']})" 
+                                 for c in supplier['contact']])
+            row[supplier['name']] = contacts
+        else:
+            row[supplier['name']] = "Нет"
+    comparison_data.append(row)
+    
+    # Количество заметок
+    row = {"Критерий": "📌 Заметки"}
+    for supplier in suppliers:
+        notes_count = len(supplier.get('notes', []))
+        row[supplier['name']] = f"{notes_count} заметок"
+    comparison_data.append(row)
+    
+    # Описание
+    row = {"Критерий": "📝 Описание"}
+    for supplier in suppliers:
+        desc = supplier.get('description', '')
+        if len(desc) > 100:
+            desc = desc[:100] + "..."
+        row[supplier['name']] = desc
+    comparison_data.append(row)
+    
+    # Отображаем таблицу с помощью st.write
+    st.write("### Сравнительная таблица")
+    
+    # Создаем HTML таблицу для красивого отображения
+    html_table = "<table style='width:100%; border-collapse: collapse;'>"
+    
+    # Заголовок
+    html_table += "<tr><th style='border:1px solid #ddd; padding:8px; background-color:#f2f2f2;'>Критерий</th>"
+    for name in supplier_names:
+        html_table += f"<th style='border:1px solid #ddd; padding:8px; background-color:#f2f2f2;'>{name}</th>"
+    html_table += "</tr>"
+    
+    # Данные
+    for row in comparison_data:
+        html_table += "<tr>"
+        html_table += f"<td style='border:1px solid #ddd; padding:8px;'><b>{row['Критерий']}</b></td>"
+        for name in supplier_names:
+            html_table += f"<td style='border:1px solid #ddd; padding:8px;'>{row[name]}</td>"
+        html_table += "</tr>"
+    
+    html_table += "</table>"
+    st.markdown(html_table, unsafe_allow_html=True)
+    
+    # Анализ
+    st.markdown("### 📈 Анализ")
+    
+    # Находим поставщика с наибольшим количеством сертификатов
+    max_cert_supplier = max(suppliers, key=lambda x: len(x.get('certificates', [])))
+    st.success(f"🏆 Поставщик с наибольшим количеством сертификатов: **{max_cert_supplier['name']}**")
+    
+    # Находим поставщика с наибольшим количеством заметок
+    max_notes_supplier = max(suppliers, key=lambda x: len(x.get('notes', [])))
+    st.info(f"📊 Поставщик с наибольшим количеством заметок: **{max_notes_supplier['name']}**")
+    
 # ==================== НАСТРОЙКА СТРАНИЦЫ ====================
 
 st.set_page_config(
@@ -30,11 +124,19 @@ if "initialize" not in st.session_state:
         "root_categories": root_categories
     }
 
+
 if "city_input" not in st.session_state:
     st.session_state.city_input = None
 
+
 if "region_input" not in st.session_state:
     st.session_state.region_input = None
+
+
+if 'selected_for_comparison' not in st.session_state:
+    st.session_state.selected_for_comparison = []
+    st.session_state.selected_suppliers = {}
+    st.session_state.comp_suppliers = []
 
 # ==================== ЗАГОЛОВОК ====================
 
@@ -109,17 +211,6 @@ with st.sidebar:
     
     # 5. Кнопки
     search_button = st.button("🔍 Найти поставщиков", use_container_width=True, type="primary")
-    if search_button:
-        st.session_state.comp_suppliers = asyncio.run(
-            api_requests.get_suppliers_by_filter(
-                city = city_input,
-                region = region_input,
-                category_id = selected_subcategory,
-                min_rating = min_rating,
-                has_certificates = only_verified
-            )
-        )
-        pprint.pprint(st.session_state.comp_suppliers)
 
 # ==================== ОСНОВНАЯ ОБЛАСТЬ ====================
 
@@ -149,10 +240,98 @@ st.markdown("---")
 
 # Информация о поиске
 if search_button:
-    st.success("🔍 Поиск выполнен! Здесь будут отображаться результаты.")
-    st.info("Пока что это заглушка. Скоро здесь появятся карточки поставщиков.")
+    st.session_state.comp_suppliers = asyncio.run(
+        api_requests.get_suppliers_by_filter(
+            city = city_input,
+            region = region_input,
+            category_id = selected_subcategory,
+            min_rating = min_rating,
+            has_certificates = only_verified
+        )
+    )
+
 else:
     st.info("👈 Выберите фильтры в боковой панели и нажмите 'Найти поставщиков'")
+
+suppliers_data = st.session_state.comp_suppliers
+if suppliers_data:
+    st.success(f"🔍 Найдено {len(suppliers_data)} поставщиков")
+    
+    # Создаем форму для группировки чекбоксов
+    with st.form(key="comparison_form"):
+        st.markdown("### 🎯 Выберите поставщиков для сравнения")
+
+        for idx, supplier in enumerate(suppliers_data):
+
+            with st.container():
+                col_check, col_content = st.columns([0.1, 0.9])
+                
+                with col_check:
+                    checkbox_key = f"supplier_{supplier['id']}"
+                    if checkbox_key not in st.session_state:
+                        st.session_state[checkbox_key] = False
+
+                    st.checkbox(
+                        "Выбрать",
+                        key=checkbox_key
+                    )
+                
+                with col_content:
+                    st.markdown(f"### 🏢 {supplier['name']}")
+                    
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.markdown(f"**📍 Адрес:** {supplier['address']}")
+                        st.markdown(f"**🏙️ Город:** {supplier['city']}")
+                        
+                        if supplier.get('contact'):
+                            st.markdown("**📞 Контакты:**")
+                            for contact in supplier['contact']:
+                                if contact['contact_type'] == 'phone':
+                                    st.markdown(f"- {contact['contact_person']}: {contact['contact_value']}")
+                    
+                    with col2:
+                        if supplier.get('certificates'):
+                            st.markdown("**📜 Сертификаты:**")
+                            for cert in supplier['certificates']:
+                                st.markdown(f"- {cert['certificate_name']} (выдан: {cert['issuing_authority']})")
+                    
+                    if supplier.get('description'):
+                        st.markdown(f"**📝 Описание:**")
+                        st.markdown(f"{supplier['description']}")
+                    
+                    if supplier.get('notes'):
+                        with st.expander("📌 Заметки"):
+                            for note in supplier['notes']:
+                                note_type = note['note_type'].upper()
+                                st.markdown(f"**{note_type}** ({note['date']}): {note['text']}")
+                    
+                    st.divider()
+        
+        # Кнопка сравнения внутри формы
+        compare_clicked = st.form_submit_button("🔍 Сравнить выбранных поставщиков")
+        # Обработка нажатия кнопки сравнени
+        if compare_clicked:
+            selected_suppliers = [
+                supplier
+                for supplier in suppliers_data
+                if st.session_state.get(
+                    f"supplier_{supplier['id']}",
+                    False
+                )
+            ]
+
+            if len(selected_suppliers) >= 2:
+                show_comparison(selected_suppliers)
+            else:
+                st.warning(
+                    "⚠️ Выберите минимум 2 поставщика для сравнения"
+                )
+else:
+    st.warning("🔍 Поставщики не найдены")
+    
+
 
 st.markdown("---")
 
