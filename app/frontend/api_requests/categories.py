@@ -9,8 +9,13 @@ BASE_URL = os.getenv("BASE_URL", "http://localhost:8000/") + "categories/"
 async def get_categories():
     try: 
         categories = requests.get(BASE_URL + "root").json()
+        categories = {
+            category.get("id", ""): {
+                "name": category.get("name", ""),
+                "children": category.get("children", [{}])
+            } for category in categories}
     except Exception as E:
-        categories = []
+        categories = {}
     finally:
         return categories
 

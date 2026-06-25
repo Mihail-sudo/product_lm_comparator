@@ -36,6 +36,12 @@ def serialize_supplier(supplier) -> dict:
             }
             for contact in (supplier.contacts or [])
         ],
+        "certificates": [
+            certificate for certificate in (supplier.certificates or [])
+        ],
+        "notes": [      
+            note for note in (supplier.notes or [])
+        ]
     }
 
 

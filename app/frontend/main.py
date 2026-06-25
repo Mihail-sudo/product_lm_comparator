@@ -1,4 +1,8 @@
 import streamlit as st
+import api_requests
+import asyncio
+import pprint
+
 
 # ==================== НАСТРОЙКА СТРАНИЦЫ ====================
 
@@ -8,6 +12,29 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# ==================== ИИЦИАЛИЗАЦИЯ ====================
+
+async def load_data():
+    cities = await api_requests.get_supplier_cities()
+    regions = await api_requests.get_supplier_regions()
+    root_categories = await api_requests.get_categories()
+    return cities, regions, root_categories
+
+
+if "initialize" not in st.session_state:
+    cities, regions, root_categories = asyncio.run(load_data())
+    st.session_state.initialize = {
+        "cities": cities,
+        "regions": regions,
+        "root_categories": root_categories
+    }
+
+if "city_input" not in st.session_state:
+    st.session_state.city_input = None
+
+if "region_input" not in st.session_state:
+    st.session_state.region_input = None
 
 # ==================== ЗАГОЛОВОК ====================
 
@@ -23,14 +50,21 @@ with st.sidebar:
     
     # 1. Локация
     st.subheader("📍 Локация")
-    city_input = st.text_input(
-        "Город",
-        placeholder="Например: Москва, Санкт-Петербург"
+    city_input = st.selectbox(
+        "Выберите город:",
+        st.session_state.initialize.get("cities", []),
+        index=None,
     )
-    region_input = st.text_input(
-        "Регион (опционально)",
-        placeholder="Например: Центральный, Южный"
+
+    region_input = st.selectbox(
+        "Выберите регион:",
+        st.session_state.initialize.get("regions", []),
+        index=None
     )
+
+    if city_input and region_input:
+    # Если оба выбраны, сбрасываем регион (или наоборот)
+        st.warning("Выберите только один параметр!")
     
     st.markdown("---")
     
@@ -38,25 +72,24 @@ with st.sidebar:
     st.subheader("📂 Категория")
     
     # Временные данные для теста
-    categories = ["Все категории", "Сырье", "Упаковка", "Готовая продукция"]
     selected_category = st.selectbox(
         "Выберите категорию",
-        options=categories
+        options=st.session_state.initialize.get("root_categories").keys(),
+        format_func=lambda x: st.session_state.initialize.get("root_categories")[x]["name"],
+        index=None
     )
     
-    # 3. Подкатегория (зависит от выбранной категории)
-    subcategories_map = {
-        "Сырье": ["Все подкатегории", "Мука", "Сахар", "Масло", "Молочные продукты"],
-        "Упаковка": ["Все подкатегории", "Пластиковая", "Стеклянная", "Картонная"],
-        "Готовая продукция": ["Все подкатегории", "Хлебобулочные", "Кондитерские"],
-        "Все категории": ["Все подкатегории"]
+    subcategory_options = st.session_state.initialize.get("root_categories").get(selected_category, {}).get("children", [])
+    data_dict = {
+        option.get("id", ""): option.get("name", "")
+        for option in subcategory_options
     }
-    
-    subcategory_options = subcategories_map.get(selected_category, ["Все подкатегории"])
     selected_subcategory = st.selectbox(
         "Выберите подкатегорию",
-        options=subcategory_options,
-        disabled=len(subcategory_options) <= 1
+        options=list(data_dict.keys()),
+        format_func=lambda x: data_dict[x],
+        index=None
+        # disabled=len(subcategory_options) <= 1
     )
     
     st.markdown("---")
@@ -76,9 +109,17 @@ with st.sidebar:
     
     # 5. Кнопки
     search_button = st.button("🔍 Найти поставщиков", use_container_width=True, type="primary")
-    
-    if st.button("🔄 Сбросить все", use_container_width=True):
-        st.rerun()
+    if search_button:
+        st.session_state.comp_suppliers = asyncio.run(
+            api_requests.get_suppliers_by_filter(
+                city = city_input,
+                region = region_input,
+                category_id = selected_subcategory,
+                min_rating = min_rating,
+                has_certificates = only_verified
+            )
+        )
+        pprint.pprint(st.session_state.comp_suppliers)
 
 # ==================== ОСНОВНАЯ ОБЛАСТЬ ====================
 
@@ -92,8 +133,13 @@ with col1:
     st.markdown(f"**🗺️ Регион:** {region_input if region_input else 'Не указан'}")
 
 with col2:
-    st.markdown(f"**📂 Категория:** {selected_category}")
-    st.markdown(f"**📂 Подкатегория:** {selected_subcategory}")
+    subcategory_options = st.session_state.initialize.get("root_categories").get(selected_category, {}).get("children", [])
+    data_dict = {
+        option.get("id", ""): option.get("name", "")
+        for option in subcategory_options
+    }
+    st.markdown(f"**📂 Категория:** {st.session_state.initialize.get("root_categories").get(selected_category, {}).get("name")}")
+    st.markdown(f"**📂 Подкатегория:** {data_dict.get(selected_subcategory)}")
 
 with col3:
     st.markdown(f"**⭐ Рейтинг:** ≥{min_rating}")

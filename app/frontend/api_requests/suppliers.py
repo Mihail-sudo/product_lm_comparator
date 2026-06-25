@@ -1,31 +1,73 @@
 import requests
 import os
 import asyncio
+import datetime
 
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000/") + "suppliers/"
 
 
-async def get_suppliers_by_filter(city=None, region=None, category_id=None):
-    params = {
-        "category_id": category_id,
-        "city": city,
-        "region": region
-    }
+def from_iso(date_time):
+    date_time = datetime.datetime.fromisoformat(date_time)
+    return date_time.strftime("%Y-%m-%d %H:%M:%S")
+
+
+async def get_suppliers_by_filter(**params):
     try: 
         suppliers = requests.get(BASE_URL + "search", params=params).json()
+        category_id = params["category_id"]
+        # result = suppliers
+        result = [
+            {
+                "name": supplier.get("name"),
+                "city": supplier.get("city"),
+                "address": supplier.get("address"),
+                "id": supplier.get("id"),
+                "description": supplier.get("description"),
+                "notes": [
+                    {
+                        "text": note.get("note_text"),
+                        "note_type": note.get("note_type"),
+                        "date": from_iso(note.get("created_at"))
+                    }
+                    for note in supplier.get("notes", [{}])
+                ],
+                "contact": [ 
+                    {
+                        'contact_person': contact.get('contact_person'),
+                        'contact_type': contact.get('contact_type'),
+                        'contact_value': contact.get('contact_value')
+                    }
+                    for contact in supplier.get("contacts")
+                    if contact.get("is_primary", False)
+                ],
+                "category": [
+                    (category.get("id"), category.get("name"))
+                    for category in supplier.get("categories")
+                    if category["id"] == category_id
+                ],
+                "certificates": [
+                    {
+                        "certificate_name": certificate.get("certificate_name"),
+                        "issuing_authority": certificate.get("issuing_authority")
+                    }
+                    for certificate in supplier.get("certificates")
+                ]
+            } for supplier in suppliers["items"]
+        ]
+
     except Exception as E:
-        suppliers = []
+        result = []
     finally:
-        return suppliers
+        return result
 
 
 async def get_supplier_cities():
     try:
         suppliers = requests.get(BASE_URL).json()['items']
-        cities = set(supplier.get("city") for supplier in suppliers)
+        cities = list(sorted(set(supplier.get("city") for supplier in suppliers)))
     except Exception as E:
-        cities = set()
+        cities = []
     finally:
         return cities
 
@@ -33,9 +75,9 @@ async def get_supplier_cities():
 async def get_supplier_regions():
     try:
         suppliers = requests.get(BASE_URL).json()['items']
-        regions = set(supplier.get("region") for supplier in suppliers)
+        regions = list(sorted(set(supplier.get("region") for supplier in suppliers)))
     except Exception as E:
-        regions = set()
+        regions = []
     finally:
         return regions
 
