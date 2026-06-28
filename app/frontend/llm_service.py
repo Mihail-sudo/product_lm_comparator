@@ -13,7 +13,7 @@ def _format_suppliers_context(suppliers: List[Dict]) -> str:
         desc = s.get("description", "")
         if desc:
             part += f"\n   Описание: {desc[:300]}"
-        contacts = s.get("contact", [])
+        contacts = s.get("contacts", [])
         if contacts:
             c_str = "; ".join(
                 f"{c.get('contact_person', '')}: {c.get('contact_value', '')}"

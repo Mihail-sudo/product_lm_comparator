@@ -8,7 +8,7 @@ from app.schemas.supplier import (
     SupplierListResponse, ParseFromUrlRequest,
 )
 from app.db.db_config import get_db
-from app.db.models import Supplier, Category, SupplierCategory, Contact, Certificate
+from app.db.models import Supplier, Category, SupplierCategory, Contact, Certificate, OrderCondition
 from app.backend.services.url_parser import parse_supplier_from_url
 from app.backend.services.llm_client import DEFAULT_MODEL
 
@@ -143,8 +143,14 @@ def parse_supplier_from_url_endpoint(
     db: Session = Depends(get_db),
 ):
     """Распарсить сайт поставщика по URL и создать запись в БД."""
+    parent_ids = [
+        row[0] for row in db.query(Category.parent_id)
+        .filter(Category.parent_id.isnot(None)).distinct().all()
+    ]
     existing_categories = [
-        cat.name for cat in db.query(Category).order_by(Category.name).all()
+        cat.name for cat in db.query(Category)
+        .filter(~Category.id.in_(parent_ids))
+        .order_by(Category.name).all()
     ]
 
     parsed = parse_supplier_from_url(
@@ -161,6 +167,7 @@ def parse_supplier_from_url_endpoint(
     categories_from_site = parsed.pop("categories", [])
     contacts_from_site = parsed.pop("contacts", [])
     certificates_from_site = parsed.pop("certificates", [])
+    order_conditions_from_site = parsed.pop("order_conditions", [])
 
     supplier_fields = {
         k: parsed[k]
@@ -219,6 +226,30 @@ def parse_supplier_from_url_endpoint(
             is_valid=c.get("is_valid", True),
         )
         db.add(cert)
+
+    VALID_ORDER_UNITS = {"kg", "ton", "piece", "box", "pallet", "liter", "other"}
+    for oc in order_conditions_from_site:
+        if not oc.get("category_name"):
+            continue
+        cat = db.query(Category).filter(Category.name == oc["category_name"]).first()
+        unit = oc.get("min_order_unit", "other")
+        if unit not in VALID_ORDER_UNITS:
+            unit = "other"
+        order_condition = OrderCondition(
+            supplier_id=supplier.id,
+            category_id=cat.id if cat else None,
+            min_order_quantity=oc.get("min_order_quantity"),
+            min_order_unit=unit,
+            price_per_unit=oc.get("price_per_unit"),
+            price_currency=oc.get("price_currency", "RUB"),
+            price_negotiable=oc.get("price_negotiable", True),
+            delivery_terms=oc.get("delivery_terms"),
+            delivery_region=oc.get("delivery_region"),
+            delivery_cost=oc.get("delivery_cost"),
+            payment_terms=oc.get("payment_terms"),
+            lead_time_days=oc.get("lead_time_days"),
+        )
+        db.add(order_condition)
 
     db.commit()
     db.refresh(supplier)

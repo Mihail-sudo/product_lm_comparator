@@ -46,7 +46,7 @@ def show_comparison_dialog(selected_suppliers):
                     <div class="supplier-mini-card">
                         <h4>{supplier.get('name', 'Без названия')}</h4>
                         <p>📍 {supplier.get('city', 'Н/Д')}, {supplier.get('address', 'Н/Д')}</p>
-                        <p>📞 {', '.join([c['contact_value'] for c in supplier.get('contact', [])[:2]]) if supplier.get('contact') else 'Нет контактов'}</p>
+                        <p>📞 {', '.join([c['contact_value'] for c in supplier.get('contacts', [])[:2]]) if supplier.get('contacts') else 'Нет контактов'}</p>
                         <p>📜 {len(supplier.get('certificates', []))} сертификатов</p>
                     </div>
                     """, unsafe_allow_html=True)
@@ -368,9 +368,9 @@ if suppliers_data:
                         st.markdown(f"**📍 Адрес:** {supplier.get('address', 'Н/Д')}")
                         st.markdown(f"**🏙️ Город:** {supplier.get('city', 'Н/Д')}")
                         
-                        if supplier.get('contact'):
+                        if supplier.get('contacts'):
                             st.markdown("**📞 Контакты:**")
-                            for contact in supplier['contact']:
+                            for contact in supplier['contacts']:
                                 if contact['contact_type'] == 'phone':
                                     st.markdown(f"- {contact.get('contact_person', 'Н/Д')}: {contact['contact_value']}")
                     
