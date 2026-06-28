@@ -57,6 +57,15 @@ None configured. No verification commands to run.
 - Model can also be set in the sidebar text input at runtime.
 - Falls back to an error message if Ollama is unreachable.
 
+## URL parsing service
+
+- `app/backend/services/url_parser.py` — fetches a supplier's website, extracts text via BeautifulSoup, sends it to the LLM, and parses the JSON response into structured supplier data.
+- `app/backend/services/llm_client.py` — backend-side Ollama client (uses `httpx`, mirrors frontend `llm_service.py`).
+- Endpoint: `POST /suppliers/parse-from-url` with body `{"url": "...", "model": "..."}`.
+- The LLM extracts name, description, city, region, address, foundation_year, categories, contacts, and certificates.
+- Categories not found in the DB are auto-created. Contacts and certificates are linked to the new supplier.
+- Requires `beautifulsoup4` (pip-installed). Ollama must be running locally.
+
 ## Style notes
 
 - `serializer.py` contains manual dict serialization from SQLAlchemy objects to Pydantic-compatible dicts.

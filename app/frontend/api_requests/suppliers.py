@@ -65,8 +65,8 @@ async def get_suppliers_by_filter(**params):
 async def get_supplier_cities():
     try:
         suppliers = requests.get(BASE_URL).json()['items']
-        cities = list(sorted(set(supplier.get("city") for supplier in suppliers)))
-    except Exception as E:
+        cities = sorted({s["city"] for s in suppliers if s.get("city")})
+    except Exception:
         cities = []
     finally:
         return cities
@@ -75,8 +75,8 @@ async def get_supplier_cities():
 async def get_supplier_regions():
     try:
         suppliers = requests.get(BASE_URL).json()['items']
-        regions = list(sorted(set(supplier.get("region") for supplier in suppliers)))
-    except Exception as E:
+        regions = sorted({s["region"] for s in suppliers if s.get("region")})
+    except Exception:
         regions = []
     finally:
         return regions

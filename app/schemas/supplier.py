@@ -85,3 +85,8 @@ class SupplierSearchParams(BaseModel):
     min_order_max: Optional[float] = None
     skip: int = 0
     limit: int = 50
+
+
+class ParseFromUrlRequest(BaseModel):
+    url: str
+    model: Optional[str] = None

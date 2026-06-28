@@ -1,6 +1,7 @@
 from .supplier import (
     SupplierBase, SupplierCreate, SupplierUpdate,
-    SupplierResponse, SupplierListResponse, SupplierSearchParams
+    SupplierResponse, SupplierListResponse, SupplierSearchParams,
+    ParseFromUrlRequest
 )
 from .category import CategoryBase, CategoryCreate, CategoryResponse
 from .contact import ContactBase, ContactCreate, ContactResponse

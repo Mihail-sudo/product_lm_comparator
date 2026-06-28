@@ -209,20 +209,29 @@ with st.sidebar:
     
     # 1. Локация
     st.subheader("📍 Локация")
-    city_input = st.selectbox(
-        "Выберите город:",
-        st.session_state.initialize.get("cities", []),
-        index=None,
+    location_mode = st.radio(
+        "Тип поиска:",
+        ["По городу", "По региону"],
+        index=0,
+        horizontal=True,
+        label_visibility="collapsed",
     )
 
-    region_input = st.selectbox(
-        "Выберите регион:",
-        st.session_state.initialize.get("regions", []),
-        index=None
-    )
+    city_input = None
+    region_input = None
 
-    if city_input and region_input:
-        st.warning("Выберите только один параметр!")
+    if location_mode == "По городу":
+        city_input = st.selectbox(
+            "Выберите город:",
+            st.session_state.initialize.get("cities", []),
+            index=None,
+        )
+    else:
+        region_input = st.selectbox(
+            "Выберите регион:",
+            st.session_state.initialize.get("regions", []),
+            index=None,
+        )
     
     st.markdown("---")
     
@@ -305,14 +314,18 @@ st.markdown("---")
 
 # Поиск поставщиков
 if search_button:
+    search_params = {
+        "category_id": selected_subcategory,
+        "min_rating": min_rating,
+        "has_certificates": only_verified,
+    }
+    if city_input:
+        search_params["city"] = city_input
+    if region_input:
+        search_params["region"] = region_input
+
     st.session_state.comp_suppliers = asyncio.run(
-        api_requests.get_suppliers_by_filter(
-            city=city_input,
-            region=region_input,
-            category_id=selected_subcategory,
-            min_rating=min_rating,
-            has_certificates=only_verified
-        )
+        api_requests.get_suppliers_by_filter(**search_params)
     )
     # Сбрасываем состояние диалога
     st.session_state.show_comparison_dialog = False

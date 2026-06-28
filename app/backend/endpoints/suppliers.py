@@ -3,9 +3,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.db.crud import suppliers as crud
-from app.schemas.supplier import SupplierResponse, SupplierCreate, SupplierUpdate, SupplierListResponse
-
+from app.schemas.supplier import (
+    SupplierResponse, SupplierCreate, SupplierUpdate,
+    SupplierListResponse, ParseFromUrlRequest,
+)
 from app.db.db_config import get_db
+from app.db.models import Supplier, Category, SupplierCategory, Contact, Certificate
+from app.backend.services.url_parser import parse_supplier_from_url
+from app.backend.services.llm_client import DEFAULT_MODEL
 
 from .serializer import serialize_supplier
 
@@ -116,3 +121,91 @@ def update_rating(supplier_id: int, db: Session = Depends(get_db)):
     crud.update_supplier_rating(db, supplier_id)
     db.refresh(supplier)
     return supplier
+
+
+@router.post("/parse-from-url", response_model=SupplierResponse, status_code=201)
+def parse_supplier_from_url_endpoint(
+    request: ParseFromUrlRequest,
+    db: Session = Depends(get_db),
+):
+    """Распарсить сайт поставщика по URL и создать запись в БД."""
+    existing_categories = [
+        cat.name for cat in db.query(Category).order_by(Category.name).all()
+    ]
+
+    parsed = parse_supplier_from_url(
+        request.url,
+        model=request.model or DEFAULT_MODEL,
+        existing_categories=existing_categories,
+    )
+    if not parsed:
+        raise HTTPException(
+            status_code=422,
+            detail="Не удалось распарсить данные с указанного URL",
+        )
+
+    categories_from_site = parsed.pop("categories", [])
+    contacts_from_site = parsed.pop("contacts", [])
+    certificates_from_site = parsed.pop("certificates", [])
+
+    supplier_fields = {
+        k: parsed[k]
+        for k in ("name", "description", "city", "region", "address",
+                  "website", "foundation_year", "is_verified", "status")
+        if k in parsed and parsed[k] is not None
+    }
+
+    supplier_fields.setdefault("city", "Не указан")
+    if not supplier_fields.get("name"):
+        raise HTTPException(status_code=422, detail="Не удалось определить название компании")
+
+    supplier = Supplier(**supplier_fields)
+    db.add(supplier)
+    db.flush()
+
+    VALID_CONTACT_TYPES = {"phone", "email", "telegram", "whatsapp", "viber", "other"}
+    VALID_CERT_TYPES = {"quality", "safety", "organic", "halal", "kosher", "iso", "other"}
+
+    for cat_name in categories_from_site:
+        if not cat_name or not isinstance(cat_name, str):
+            continue
+        category = db.query(Category).filter(Category.name == cat_name).first()
+        if category:
+            link = SupplierCategory(supplier_id=supplier.id, category_id=category.id, is_main=False)
+            db.add(link)
+
+    for c in contacts_from_site:
+        if not c.get("value"):
+            continue
+        ctype = c.get("type", "other")
+        if ctype not in VALID_CONTACT_TYPES:
+            ctype = "other"
+        contact = Contact(
+            supplier_id=supplier.id,
+            contact_type=ctype,
+            contact_value=c["value"],
+            contact_person=c.get("contact_person"),
+            is_primary=c.get("is_primary", False),
+        )
+        db.add(contact)
+
+    for c in certificates_from_site:
+        if not c.get("certificate_name"):
+            continue
+        ctype = c.get("certificate_type", "other")
+        if ctype not in VALID_CERT_TYPES:
+            ctype = "other"
+        cert = Certificate(
+            supplier_id=supplier.id,
+            certificate_name=c["certificate_name"],
+            certificate_type=ctype,
+            issuing_authority=c.get("issuing_authority"),
+            issued_date=c.get("issued_date"),
+            expiry_date=c.get("expiry_date"),
+            is_valid=c.get("is_valid", True),
+        )
+        db.add(cert)
+
+    db.commit()
+    db.refresh(supplier)
+    return serialize_supplier(supplier)
