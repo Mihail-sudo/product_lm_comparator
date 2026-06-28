@@ -1,7 +1,8 @@
 import requests
 import os
-import asyncio
 import datetime
+from requests.exceptions import ConnectionError, Timeout
+from .exceptions import ApiError
 
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000/") + "suppliers/"
@@ -12,79 +13,72 @@ def from_iso(date_time):
     return date_time.strftime("%Y-%m-%d %H:%M:%S")
 
 
-async def get_suppliers_by_filter(**params):
-    try: 
-        suppliers = requests.get(BASE_URL + "search", params=params).json()
-        category_id = params["category_id"]
-        # result = suppliers
-        result = [
-            {
-                "name": supplier.get("name"),
-                "city": supplier.get("city"),
-                "address": supplier.get("address"),
-                "id": supplier.get("id"),
-                "description": supplier.get("description"),
-                "notes": [
-                    {
-                        "text": note.get("note_text"),
-                        "note_type": note.get("note_type"),
-                        "date": from_iso(note.get("created_at"))
-                    }
-                    for note in supplier.get("notes", [{}])
-                ],
-                "contact": [ 
-                    {
-                        'contact_person': contact.get('contact_person'),
-                        'contact_type': contact.get('contact_type'),
-                        'contact_value': contact.get('contact_value')
-                    }
-                    for contact in supplier.get("contacts")
-                    if contact.get("is_primary", False)
-                ],
-                "category": [
-                    (category.get("id"), category.get("name"))
-                    for category in supplier.get("categories")
-                    if category["id"] == category_id
-                ],
-                "certificates": [
-                    {
-                        "certificate_name": certificate.get("certificate_name"),
-                        "issuing_authority": certificate.get("issuing_authority")
-                    }
-                    for certificate in supplier.get("certificates")
-                ]
-            } for supplier in suppliers["items"]
-        ]
-
-    except Exception as E:
-        result = []
-    finally:
-        return result
-
-
-async def get_supplier_cities():
+def _get_json(path, params=None):
     try:
-        suppliers = requests.get(BASE_URL).json()['items']
-        cities = sorted({s["city"] for s in suppliers if s.get("city")})
-    except Exception:
-        cities = []
-    finally:
-        return cities
+        resp = requests.get(BASE_URL + path, params=params, timeout=10)
+        resp.raise_for_status()
+        return resp.json()
+    except ConnectionError:
+        raise ApiError("Не удалось подключиться к серверу. Запущен ли бекенд (порт 8000)?")
+    except Timeout:
+        raise ApiError("Сервер не ответил вовремя. Попробуйте позже.")
+    except requests.exceptions.HTTPError as e:
+        raise ApiError(f"Сервер вернул ошибку: {e}")
 
 
-async def get_supplier_regions():
-    try:
-        suppliers = requests.get(BASE_URL).json()['items']
-        regions = sorted({s["region"] for s in suppliers if s.get("region")})
-    except Exception:
-        regions = []
-    finally:
-        return regions
+def get_suppliers_by_filter(**params):
+    data = _get_json("search", params=params)
+    category_id = params.get("category_id")
+    return [
+        {
+            "name": supplier.get("name"),
+            "city": supplier.get("city"),
+            "address": supplier.get("address"),
+            "id": supplier.get("id"),
+            "description": supplier.get("description"),
+            "notes": [
+                {
+                    "text": note.get("note_text"),
+                    "note_type": note.get("note_type"),
+                    "date": from_iso(note.get("created_at"))
+                }
+                for note in (supplier.get("notes") or [])
+            ],
+            "contact": [
+                {
+                    'contact_person': contact.get('contact_person'),
+                    'contact_type': contact.get('contact_type'),
+                    'contact_value': contact.get('contact_value')
+                }
+                for contact in (supplier.get("contacts") or [])
+                if contact.get("is_primary", False)
+            ],
+            "category": [
+                (category.get("id"), category.get("name"))
+                for category in (supplier.get("categories") or [])
+                if category.get("id") == category_id
+            ],
+            "certificates": [
+                {
+                    "certificate_name": certificate.get("certificate_name"),
+                    "issuing_authority": certificate.get("issuing_authority")
+                }
+                for certificate in (supplier.get("certificates") or [])
+            ]
+        } for supplier in data["items"]
+    ]
 
-    
-async def main():
-    result = await get_supplier_regions()
-    print(result)
+
+def get_supplier_cities():
+    data = _get_json("", params={"limit": 100})
+    return sorted({s["city"] for s in data["items"] if s.get("city")})
+
+
+def get_supplier_regions():
+    data = _get_json("", params={"limit": 100})
+    return sorted({s["region"] for s in data["items"] if s.get("region")})
+
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    result = get_supplier_regions()
+    print(result)

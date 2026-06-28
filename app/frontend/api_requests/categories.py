@@ -1,28 +1,29 @@
 import requests
 import os
-import asyncio
+from requests.exceptions import ConnectionError, Timeout
+from .exceptions import ApiError
 
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000/") + "categories/"
 
 
-async def get_categories():
-    try: 
-        categories = requests.get(BASE_URL + "root").json()
-        categories = {
-            category.get("id", ""): {
-                "name": category.get("name", ""),
-                "children": category.get("children", [{}])
-            } for category in categories}
-    except Exception as E:
-        categories = {}
-    finally:
-        return categories
+def get_categories():
+    try:
+        categories = requests.get(BASE_URL + "root", timeout=10).json()
+    except ConnectionError:
+        raise ApiError("Не удалось подключиться к серверу. Запущен ли бекенд?")
+    except Timeout:
+        raise ApiError("Сервер не ответил вовремя. Попробуйте позже.")
+    except Exception as e:
+        raise ApiError(f"Ошибка загрузки категорий: {e}")
+    return {
+        category.get("id", ""): {
+            "name": category.get("name", ""),
+            "children": category.get("children") or []
+        } for category in categories
+    }
 
-
-async def main():
-    result = await get_categories()
-    print(result)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    result = get_categories()
+    print(result)

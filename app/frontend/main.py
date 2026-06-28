@@ -1,6 +1,6 @@
 import streamlit as st
 import api_requests
-import asyncio
+from api_requests.exceptions import ApiError
 import styles
 import llm_service
 
@@ -166,20 +166,23 @@ st.set_page_config(
 
 # ==================== ИНИЦИАЛИЗАЦИЯ ====================
 
-async def load_data():
-    cities = await api_requests.get_supplier_cities()
-    regions = await api_requests.get_supplier_regions()
-    root_categories = await api_requests.get_categories()
-    return cities, regions, root_categories
-
-
 if "initialize" not in st.session_state:
-    cities, regions, root_categories = asyncio.run(load_data())
-    st.session_state.initialize = {
-        "cities": cities,
-        "regions": regions,
-        "root_categories": root_categories
-    }
+    try:
+        cities = api_requests.get_supplier_cities()
+        regions = api_requests.get_supplier_regions()
+        root_categories = api_requests.get_categories()
+        st.session_state.initialize = {
+            "cities": cities,
+            "regions": regions,
+            "root_categories": root_categories
+        }
+    except ApiError as e:
+        st.session_state.initialize = {
+            "cities": [],
+            "regions": [],
+            "root_categories": {}
+        }
+        st.error(f"⚠️ {e}")
 
 if "llm_model" not in st.session_state:
     st.session_state.llm_model = llm_service.DEFAULT_MODEL
@@ -245,7 +248,7 @@ with st.sidebar:
         index=None
     )
     
-    subcategory_options = st.session_state.initialize.get("root_categories").get(selected_category, {}).get("children", [])
+    subcategory_options = st.session_state.initialize.get("root_categories").get(selected_category, {}).get("children") or []
     data_dict = {
         option.get("id", ""): option.get("name", "")
         for option in subcategory_options
@@ -298,7 +301,7 @@ with col1:
     st.markdown(f"**🗺️ Регион:** {region_input if region_input else 'Не указан'}")
 
 with col2:
-    subcategory_options = st.session_state.initialize.get("root_categories").get(selected_category, {}).get("children", [])
+    subcategory_options = st.session_state.initialize.get("root_categories").get(selected_category, {}).get("children") or []
     data_dict = {
         option.get("id", ""): option.get("name", "")
         for option in subcategory_options
@@ -317,16 +320,19 @@ if search_button:
     search_params = {
         "category_id": selected_subcategory,
         "min_rating": min_rating,
-        "has_certificates": only_verified,
     }
     if city_input:
         search_params["city"] = city_input
     if region_input:
         search_params["region"] = region_input
+    if only_verified:
+        search_params["is_verified"] = True
 
-    st.session_state.comp_suppliers = asyncio.run(
-        api_requests.get_suppliers_by_filter(**search_params)
-    )
+    try:
+        st.session_state.comp_suppliers = api_requests.get_suppliers_by_filter(**search_params)
+    except ApiError as e:
+        st.error(f"⚠️ {e}")
+        st.session_state.comp_suppliers = []
     # Сбрасываем состояние диалога
     st.session_state.show_comparison_dialog = False
 

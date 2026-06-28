@@ -5,7 +5,8 @@ from .suppliers import (
     create_supplier,
     update_supplier,
     delete_supplier,
-    search_suppliers
+    search_suppliers,
+    search_suppliers_count,
 )
 
 from .categories import (
@@ -30,15 +31,17 @@ from .order_conditions import (
     get_order_conditions_by_supplier,
     get_order_conditions_by_supplier_and_category,
     create_order_condition,
-    update_order_condition
+    update_order_condition,
+    delete_order_condition,
 )
 
 from .certificates import (
     get_certificates_by_supplier,
     get_valid_certificates,
     create_certificate,
+    update_certificate,
     update_certificate_validity,
-    delete_certificate
+    delete_certificate,
 )
 
 from .user_notes import (

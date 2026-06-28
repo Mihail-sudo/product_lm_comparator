@@ -33,7 +33,16 @@ def create_order_condition(supplier_id: int, condition_data: OrderConditionCreat
 @router.put("/{condition_id}", response_model=OrderConditionResponse)
 def update_order_condition(condition_id: int, condition_data: OrderConditionCreate, db: Session = Depends(get_db)):
     """Обновить условие заказа."""
-    condition = crud.update_order_condition(db, condition_id, condition_data.model_dumpapp())
+    condition = crud.update_order_condition(db, condition_id, condition_data.model_dump())
     if not condition:
         raise HTTPException(status_code=404, detail="Order condition not found")
     return condition
+
+
+@router.delete("/{condition_id}", status_code=204)
+def delete_order_condition(condition_id: int, db: Session = Depends(get_db)):
+    """Удалить условие заказа."""
+    deleted = crud.delete_order_condition(db, condition_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Order condition not found")
+    return None

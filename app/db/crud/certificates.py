@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any
+from typing import List, Optional, Dict, Any
 from datetime import date
 
 from ..models import Certificate
@@ -24,6 +24,18 @@ def create_certificate(db: Session, supplier_id: int, cert_data: Dict[str, Any])
     """Создать сертификат."""
     certificate = Certificate(supplier_id=supplier_id, **cert_data)
     db.add(certificate)
+    db.commit()
+    db.refresh(certificate)
+    return certificate
+
+
+def update_certificate(db: Session, certificate_id: int, cert_data: Dict[str, Any]) -> Optional[Certificate]:
+    """Обновить сертификат."""
+    certificate = db.query(Certificate).filter(Certificate.id == certificate_id).first()
+    if not certificate:
+        return None
+    for key, value in cert_data.items():
+        setattr(certificate, key, value)
     db.commit()
     db.refresh(certificate)
     return certificate

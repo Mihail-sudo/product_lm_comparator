@@ -36,6 +36,16 @@ def create_order_condition(
     return condition
 
 
+def delete_order_condition(db: Session, condition_id: int) -> bool:
+    """Удалить условие заказа."""
+    condition = db.query(OrderCondition).filter(OrderCondition.id == condition_id).first()
+    if not condition:
+        return False
+    db.delete(condition)
+    db.commit()
+    return True
+
+
 def update_order_condition(
     db: Session, 
     condition_id: int, 

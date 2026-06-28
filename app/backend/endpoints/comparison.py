@@ -5,7 +5,7 @@ from app.db.crud import utils as crud
 from app.schemas.comparison import ComparisonRequest, ComparisonResponse
 from app.db.db_config import get_db
 
-from .serializer import serialize_2_compare
+from .serializer import serialize_supplier
 
 router = APIRouter(prefix="/comparison", tags=["comparison"])
 
@@ -29,6 +29,6 @@ def compare_suppliers(request: ComparisonRequest, db: Session = Depends(get_db))
         missing = [id for id in request.supplier_ids if id not in found_ids]
         raise HTTPException(status_code=404, detail=f"Suppliers not found: {missing}")
 
-    suppliers = [serialize_2_compare(supplier) for supplier in suppliers]
+    suppliers = [serialize_supplier(supplier) for supplier in suppliers]
     
     return ComparisonResponse(suppliers=suppliers)
