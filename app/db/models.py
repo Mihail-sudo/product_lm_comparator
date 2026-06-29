@@ -15,7 +15,7 @@ class Supplier(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
     description = Column(Text)
-    city = Column(String(100), nullable=False)
+    city = Column(String(100), nullable=True)
     region = Column(String(100))
     address = Column(Text)
     website = Column(String(255))
@@ -33,6 +33,7 @@ class Supplier(Base):
     order_conditions = relationship('OrderCondition', back_populates='supplier', cascade='all, delete-orphan')
     certificates = relationship('Certificate', back_populates='supplier', cascade='all, delete-orphan')
     notes = relationship('UserNote', back_populates='supplier', cascade='all, delete-orphan')
+    locations = relationship('SupplierLocation', back_populates='supplier', cascade='all, delete-orphan')
     
     __table_args__ = (
         Index('idx_suppliers_city', 'city'),
@@ -165,6 +166,24 @@ class Certificate(Base):
     
     def __repr__(self):
         return f"<Certificate(id={self.id}, name='{self.certificate_name}', is_valid={self.is_valid})>"
+
+
+class SupplierLocation(Base):
+    __tablename__ = 'supplier_locations'
+
+    id = Column(Integer, primary_key=True, index=True)
+    supplier_id = Column(Integer, ForeignKey('suppliers.id', ondelete='CASCADE'), nullable=False)
+    city = Column(String(100), nullable=False)
+    region = Column(String(100))
+
+    supplier = relationship('Supplier', back_populates='locations')
+
+    __table_args__ = (
+        Index('idx_supplier_locations_supplier', 'supplier_id'),
+    )
+
+    def __repr__(self):
+        return f"<SupplierLocation(id={self.id}, city='{self.city}', region='{self.region}')>"
 
 
 class UserNote(Base):

@@ -9,7 +9,9 @@ from app.frontend.llm_common import call_ollama, DEFAULT_MODEL
 def _format_suppliers_context(suppliers: List[Dict]) -> str:
     parts = []
     for i, s in enumerate(suppliers, 1):
-        part = f"{i}. {s.get('name', 'N/A')} (г. {s.get('city', 'N/A')})"
+        cities = [loc['city'] for loc in (s.get('locations') or []) if loc.get('city')]
+        city_str = ', '.join(cities) if cities else 'N/A'
+        part = f"{i}. {s.get('name', 'N/A')} (г. {city_str})"
         desc = s.get("description", "")
         if desc:
             part += f"\n   Описание: {desc[:300]}"

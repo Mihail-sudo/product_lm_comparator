@@ -7,8 +7,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 
 from app.db.models import (
-    Base, Supplier, Category, SupplierCategory, Contact,
-    Certificate,
+    Base, Supplier, Category, SupplierCategory, SupplierLocation,
+    Contact, Certificate,
 )
 from app.db.db_config import get_db
 from app.backend.main import app
@@ -46,6 +46,7 @@ def seed_test_data(db: Session):
     db.add(supplier)
     db.flush()
 
+    db.add(SupplierLocation(supplier_id=supplier.id, city="Москва", region="Центральный"))
     db.add(SupplierCategory(supplier_id=supplier.id, category_id=cat_root.id, is_main=True))
     db.add(SupplierCategory(supplier_id=supplier.id, category_id=cat_child.id, is_main=False))
 
@@ -81,6 +82,7 @@ def seed_test_data(db: Session):
     db.add(supplier2)
     db.flush()
 
+    db.add(SupplierLocation(supplier_id=supplier2.id, city="Казань", region="Приволжский"))
     db.add(SupplierCategory(supplier_id=supplier2.id, category_id=cat_child.id, is_main=True))
 
     supplier3 = Supplier(
@@ -94,6 +96,8 @@ def seed_test_data(db: Session):
         status="inactive",
     )
     db.add(supplier3)
+    db.flush()
+    db.add(SupplierLocation(supplier_id=supplier3.id, city="Москва", region="Центральный"))
 
     db.commit()
 

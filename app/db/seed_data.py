@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 
 from .db_config import SessionLocal, engine
 from .models import (
-    Base, Supplier, Category, SupplierCategory, Contact,
-    OrderCondition, Certificate, UserNote
+    Base, Supplier, Category, SupplierCategory, SupplierLocation,
+    Contact, OrderCondition, Certificate, UserNote
 )
 
 DATA_PATH = 'data.json'
@@ -25,6 +25,7 @@ def clear_tables(db: Session) -> None:
     db.query(Certificate).delete()
     db.query(OrderCondition).delete()
     db.query(Contact).delete()
+    db.query(SupplierLocation).delete()
     db.query(SupplierCategory).delete()
     db.query(Supplier).delete()
     db.query(Category).delete()
@@ -55,8 +56,8 @@ def create_supplier_from_json(db: Session, supplier_data: Dict[str, Any]) -> Sup
     supplier = Supplier(
         name=supplier_data['name'],
         description=supplier_data.get('description', ''),
-        city=supplier_data['city'],
-        region=supplier_data.get('region', ''),
+        city=supplier_data.get('city'),
+        region=supplier_data.get('region'),
         address=supplier_data.get('address', ''),
         website=supplier_data.get('website', ''),
         foundation_year=supplier_data.get('foundation_year'),
@@ -67,7 +68,24 @@ def create_supplier_from_json(db: Session, supplier_data: Dict[str, Any]) -> Sup
     )
     db.add(supplier)
     db.flush()  # Получаем ID поставщика
-    
+
+    # 1b. Создаем локации
+    locations_data = supplier_data.get('locations')
+    if locations_data and isinstance(locations_data, list):
+        for loc in locations_data:
+            if loc.get('city'):
+                db.add(SupplierLocation(
+                    supplier_id=supplier.id,
+                    city=loc['city'],
+                    region=loc.get('region'),
+                ))
+    elif supplier.city:
+        db.add(SupplierLocation(
+            supplier_id=supplier.id,
+            city=supplier.city,
+            region=supplier.region,
+        ))
+
     # 2. Добавляем категории
     categories = supplier_data.get('categories', [])
     for cat_data in categories:

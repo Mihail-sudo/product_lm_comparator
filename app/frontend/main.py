@@ -45,7 +45,7 @@ def show_comparison_dialog(selected_suppliers):
                     st.markdown(f"""
                     <div class="supplier-mini-card">
                         <h4>{supplier.get('name', 'Без названия')}</h4>
-                        <p>📍 {supplier.get('city', 'Н/Д')}, {supplier.get('address', 'Н/Д')}</p>
+                        <p>📍 {', '.join(loc['city'] for loc in (supplier.get('locations') or []) if loc.get('city')) or 'Н/Д'}, {supplier.get('address', 'Н/Д')}</p>
                         <p>📞 {', '.join([c['contact_value'] for c in supplier.get('contacts', [])[:2]]) if supplier.get('contacts') else 'Нет контактов'}</p>
                         <p>📜 {len(supplier.get('certificates', []))} сертификатов</p>
                     </div>
@@ -366,7 +366,8 @@ if suppliers_data:
                     
                     with col1:
                         st.markdown(f"**📍 Адрес:** {supplier.get('address', 'Н/Д')}")
-                        st.markdown(f"**🏙️ Город:** {supplier.get('city', 'Н/Д')}")
+                        cities_str = ', '.join(loc['city'] for loc in (supplier.get('locations') or []) if loc.get('city')) or 'Н/Д'
+                        st.markdown(f"**🏙️ Города:** {cities_str}")
                         
                         if supplier.get('contacts'):
                             st.markdown("**📞 Контакты:**")

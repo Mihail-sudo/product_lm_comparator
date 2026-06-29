@@ -8,7 +8,7 @@ from app.schemas.supplier import (
     SupplierListResponse, ParseFromUrlRequest,
 )
 from app.db.db_config import get_db
-from app.db.models import Supplier, Category, SupplierCategory, Contact, Certificate, OrderCondition
+from app.db.models import Supplier, Category, SupplierCategory, SupplierLocation, Contact, Certificate, OrderCondition
 from app.backend.services.url_parser import parse_supplier_from_url
 from app.backend.services.llm_client import DEFAULT_MODEL
 
@@ -143,20 +143,25 @@ def parse_supplier_from_url_endpoint(
     db: Session = Depends(get_db),
 ):
     """Распарсить сайт поставщика по URL и создать запись в БД."""
-    parent_ids = [
-        row[0] for row in db.query(Category.parent_id)
-        .filter(Category.parent_id.isnot(None)).distinct().all()
-    ]
-    existing_categories = [
-        cat.name for cat in db.query(Category)
-        .filter(~Category.id.in_(parent_ids))
-        .order_by(Category.name).all()
-    ]
+    all_categories = db.query(Category).order_by(Category.name).all()
+    all_category_names = [c.name for c in all_categories]
+    parent_to_children: dict[str, list[str]] = {}
+    parent_category_names: set[str] = set()
+    for c in all_categories:
+        if c.parent_id is None:
+            parent_category_names.add(c.name)
+            parent_to_children[c.name] = []
+        else:
+            parent_name = next(
+                (p.name for p in all_categories if p.id == c.parent_id), None
+            )
+            if parent_name:
+                parent_to_children.setdefault(parent_name, []).append(c.name)
 
     parsed = parse_supplier_from_url(
         request.url,
         model=request.model or DEFAULT_MODEL,
-        existing_categories=existing_categories,
+        existing_categories=all_category_names,
     )
     if not parsed:
         raise HTTPException(
@@ -165,9 +170,31 @@ def parse_supplier_from_url_endpoint(
         )
 
     categories_from_site = parsed.pop("categories", [])
-    contacts_from_site = parsed.pop("contacts", [])
-    certificates_from_site = parsed.pop("certificates", [])
-    order_conditions_from_site = parsed.pop("order_conditions", [])
+    categories_from_site = [
+        c for c in categories_from_site
+        if isinstance(c, str) and c.strip()
+    ]
+    expanded = []
+    for c in categories_from_site:
+        if c in parent_category_names:
+            expanded.extend(parent_to_children.get(c, []))
+        else:
+            expanded.append(c)
+    all_leaf_names = set(all_category_names) - parent_category_names
+    skipped_cats = [c for c in expanded if c not in all_leaf_names]
+    if skipped_cats:
+        print(f"Предупреждение: категории {skipped_cats} не найдены в БД или являются родительскими", flush=True)
+    categories_from_site = list({c for c in expanded if c in all_leaf_names})
+
+    if not categories_from_site:
+        raise HTTPException(
+            status_code=422,
+            detail="Не удалось определить категории поставщика — сайт не добавлен",
+        )
+
+    contacts_from_site = parsed.pop("contacts", []) or []
+    certificates_from_site = parsed.pop("certificates", []) or []
+    order_conditions_from_site = parsed.pop("order_conditions", []) or []
 
     supplier_fields = {
         k: parsed[k]
@@ -176,13 +203,33 @@ def parse_supplier_from_url_endpoint(
         if k in parsed and parsed[k] is not None
     }
 
-    supplier_fields.setdefault("city", "Не указан")
     if not supplier_fields.get("name"):
         raise HTTPException(status_code=422, detail="Не удалось определить название компании")
+
+    if not supplier_fields.get("city"):
+        supplier_fields["city"] = "Не указан"
+
+    locations_from_site = parsed.pop("locations", None)
+    has_locations_from_site = bool(locations_from_site and isinstance(locations_from_site, list))
 
     supplier = Supplier(**supplier_fields)
     db.add(supplier)
     db.flush()
+
+    if has_locations_from_site:
+        for loc in locations_from_site:
+            if loc.get("city"):
+                db.add(SupplierLocation(
+                    supplier_id=supplier.id,
+                    city=loc["city"],
+                    region=loc.get("region"),
+                ))
+    elif supplier.city and supplier.city != "Не указан":
+        db.add(SupplierLocation(
+            supplier_id=supplier.id,
+            city=supplier.city,
+            region=supplier.region,
+        ))
 
     VALID_CONTACT_TYPES = {"phone", "email", "telegram", "whatsapp", "viber", "other"}
     VALID_CERT_TYPES = {"quality", "safety", "organic", "halal", "kosher", "iso", "other"}

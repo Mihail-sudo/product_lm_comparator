@@ -3,7 +3,7 @@ from sqlalchemy import or_, desc, func
 from typing import List, Optional, Dict, Any
 
 from ..models import (
-    Supplier, SupplierCategory,
+    Supplier, SupplierCategory, SupplierLocation,
     OrderCondition, Certificate,
 )
 
@@ -16,13 +16,15 @@ def get_supplier(db: Session, supplier_id: int) -> Optional[Supplier]:
         selectinload(Supplier.order_conditions),
         selectinload(Supplier.certificates),
         selectinload(Supplier.notes),
+        selectinload(Supplier.locations),
     ).filter(Supplier.id == supplier_id).first()
 
 
 def get_all_suppliers(db: Session, skip: int = 0, limit: int = 100, only_active: bool = True) -> List[Supplier]:
     """Получить список всех поставщиков с пагинацией."""
     query = db.query(Supplier).options(
-        selectinload(Supplier.categories).selectinload(SupplierCategory.category)
+        selectinload(Supplier.categories).selectinload(SupplierCategory.category),
+        selectinload(Supplier.locations),
     )
     if only_active:
         query = query.filter(Supplier.status == 'active')
@@ -40,6 +42,7 @@ def get_suppliers_count(db: Session, only_active: bool = True) -> int:
 def create_supplier(db: Session, supplier_data: Dict[str, Any]) -> Supplier:
     """Создать нового поставщика."""
     category_ids = supplier_data.pop('category_ids', None)
+    locations_data = supplier_data.pop('locations', None)
 
     supplier = Supplier(**supplier_data)
     db.add(supplier)
@@ -53,6 +56,16 @@ def create_supplier(db: Session, supplier_data: Dict[str, Any]) -> Supplier:
                 is_main=False
             )
             db.add(supplier_category)
+
+    if locations_data:
+        for loc in locations_data:
+            db.add(SupplierLocation(supplier_id=supplier.id, **loc))
+    elif supplier.city:
+        db.add(SupplierLocation(
+            supplier_id=supplier.id,
+            city=supplier.city,
+            region=supplier.region,
+        ))
 
     db.commit()
     db.refresh(supplier)
@@ -112,10 +125,14 @@ def _apply_search_filters(
         )
 
     if city:
-        query = query.filter(Supplier.city.ilike(f"%{city}%"))
+        query = query.join(Supplier.locations).filter(
+            SupplierLocation.city.ilike(f"%{city}%")
+        )
 
     if region:
-        query = query.filter(Supplier.region.ilike(f"%{region}%"))
+        query = query.join(Supplier.locations).filter(
+            SupplierLocation.region.ilike(f"%{region}%")
+        )
 
     if min_rating is not None:
         query = query.filter(Supplier.rating >= min_rating)
@@ -176,7 +193,8 @@ def search_suppliers(
 ) -> List[Supplier]:
     query = db.query(Supplier).options(
         joinedload(Supplier.categories).joinedload(SupplierCategory.category),
-        joinedload(Supplier.contacts)
+        joinedload(Supplier.contacts),
+        selectinload(Supplier.locations),
     )
     query = _apply_search_filters(
         query,

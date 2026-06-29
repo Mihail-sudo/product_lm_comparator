@@ -33,6 +33,7 @@ def get_suppliers_by_filter(**params):
         {
             "name": supplier.get("name"),
             "city": supplier.get("city"),
+            "locations": supplier.get("locations", []),
             "address": supplier.get("address"),
             "id": supplier.get("id"),
             "description": supplier.get("description"),
@@ -71,12 +72,22 @@ def get_suppliers_by_filter(**params):
 
 def get_supplier_cities():
     data = _get_json("", params={"limit": 100})
-    return sorted({s["city"] for s in data["items"] if s.get("city")})
+    cities = set()
+    for s in data["items"]:
+        for loc in s.get("locations") or []:
+            if loc.get("city"):
+                cities.add(loc["city"])
+    return sorted(cities)
 
 
 def get_supplier_regions():
     data = _get_json("", params={"limit": 100})
-    return sorted({s["region"] for s in data["items"] if s.get("region")})
+    regions = set()
+    for s in data["items"]:
+        for loc in s.get("locations") or []:
+            if loc.get("region"):
+                regions.add(loc["region"])
+    return sorted(regions)
 
 
 if __name__ == "__main__":

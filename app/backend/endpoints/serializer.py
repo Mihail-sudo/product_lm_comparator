@@ -10,6 +10,15 @@ def serialize_supplier(supplier) -> dict:
         for sc in (supplier.categories or [])
     ]
 
+    locations = [
+        {
+            "id": loc.id,
+            "city": loc.city,
+            "region": loc.region,
+        }
+        for loc in (supplier.locations or [])
+    ]
+
     return {
         "id": supplier.id,
         "name": supplier.name,
@@ -30,4 +39,5 @@ def serialize_supplier(supplier) -> dict:
         "order_conditions": supplier.order_conditions,
         "certificates": supplier.certificates,
         "notes": supplier.notes,
+        "locations": locations,
     }

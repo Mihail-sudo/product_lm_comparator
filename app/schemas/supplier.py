@@ -8,12 +8,13 @@ from .contact import ContactResponse
 from .order_condition import OrderConditionResponse
 from .certificate import CertificateResponse
 from .user_note import UserNoteResponse
+from .location import LocationResponse, LocationCreate
 
 
 class SupplierBase(BaseModel):
     name: str = Field(..., max_length=255)
     description: Optional[str] = None
-    city: str = Field(..., max_length=100)
+    city: Optional[str] = Field(None, max_length=100)
     region: Optional[str] = Field(None, max_length=100)
     address: Optional[str] = None
     website: Optional[str] = Field(None, max_length=255)
@@ -30,7 +31,8 @@ class SupplierBase(BaseModel):
 
 
 class SupplierCreate(SupplierBase):
-    category_ids: Optional[List[int]] = None  # Список ID категорий
+    category_ids: Optional[List[int]] = None
+    locations: Optional[List[LocationCreate]] = None
 
 
 class SupplierUpdate(BaseModel):
@@ -64,6 +66,7 @@ class SupplierResponse(SupplierBase):
     order_conditions: Optional[List[OrderConditionResponse]] = None
     certificates: Optional[List[CertificateResponse]] = None
     notes: Optional[List[UserNoteResponse]] = None
+    locations: Optional[List[LocationResponse]] = None
     
     model_config = {"from_attributes": True}
 
